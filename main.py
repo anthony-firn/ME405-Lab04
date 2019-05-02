@@ -16,53 +16,12 @@ import controller
 import encoder
 import motor
 import pyb
+import micropython
 import utime
 
 # Allocate memory so that exceptions raised in interrupt service routines can
 # generate useful diagnostic printouts
 micropython.alloc_emergency_exception_buf (100)
-
-
-GOING = const (0)
-STOPPED = const (1)
-PRINT = const (2)
-    
-def task_calculation ():
-    ''' Function which runs for Task 1, which toggles twice every second in a
-    way which is only slightly silly.  '''
-    control = controller.Controller(0.1, 0)
-    motor1 = motor.MotorDriver()
-    encoder1 = encoder.Encoder(pyb.Pin.board.PB6, pyb.Pin.board.PB7, pyb.Timer(4))
-
-    state = STOPPED
-    start_count = utime.ticks_ms()
-    running_count = utime.ticks_ms()
-    
-    while True:
-        pwm = control.calculate(encoder1.get_position())
-        motor1.set_duty_cycle(pwm)
-        running_count = utime.ticks_ms()
-        if state == STOPPED :
-            control.clear_list()
-            if (running_count > (start_count + 10000)) :
-                control.set_setpoint(5000)
-                start_count = utime.ticks_ms()
-                state = GOING
-        elif state == GOING :
-            if (running_count > (start_count + 300)) :
-                control.set_setpoint(0)
-                encoder1.zero()
-                start_count = utime.ticks_ms()
-                state = PRINT
-        elif state == PRINT :
-            control.print_results()
-            control.clear_list()
-            print("print end")
-            state = STOPPED
-            
-        yield (state)
-
-
 
 # =============================================================================
 
