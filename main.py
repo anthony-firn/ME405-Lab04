@@ -44,7 +44,6 @@ def main():
 
 
 def interrupt():
-    
     value = adc.read()
     if queue.full() == False:
         queue.put(value)
